@@ -1,0 +1,6 @@
+agent_name = "flower-bot"
+secret_set = "flower-bot-secrets"
+agent_profile = "agent-1x"
+
+[scaling]
+	min_agents = 1
