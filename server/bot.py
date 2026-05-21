@@ -53,6 +53,7 @@ from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.smallwebrtc.connection import SmallWebRTCConnection
 from pipecat.transports.smallwebrtc.transport import SmallWebRTCTransport
 from pipecat.transports.websocket.fastapi import FastAPIWebsocketParams, FastAPIWebsocketTransport
+from pipecat.turns.user_turn_strategies import FilterIncompleteUserTurnStrategies
 
 from mock_backend import BOUQUETS, KNOWN_CUSTOMERS
 
@@ -383,6 +384,7 @@ async def run_bot(
         context,
         user_params=LLMUserAggregatorParams(
             vad_analyzer=SileroVADAnalyzer(),
+            user_turn_strategies=FilterIncompleteUserTurnStrategies(),
         ),
     )
 
