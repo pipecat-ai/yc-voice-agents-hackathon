@@ -415,7 +415,12 @@ async def run_bot(
     async def on_client_connected(transport, client):
         logger.info("Client connected")
         # Kick off the conversation
-        context.add_message({"role": "user", "content": "A customer just called. Greet them."})
+        context.add_message(
+            {
+                "role": "user",
+                "content": "A customer just called. Greet them, 'This is Field & Flower, your local flower shop. How can I help you today?'",
+            }
+        )
         await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
