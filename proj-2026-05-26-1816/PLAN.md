@@ -116,7 +116,7 @@ File under change: `/home/khkramer/src/yc-voice-agents-hackathon/server/nvidia_s
   - **`_audio_bytes_sent` is now functional** (the unmatched-stop guard reads it): move the increment in `run_stt` to AFTER a successful `await self._websocket.send(...)` (so a failed send doesn't miscount), and update its comment (no longer merely diagnostic).
   Key files: `server/nvidia_stt.py`
 
-- [ ] **4. Explicit WS keepalive ping params**
+- [x] **4. Explicit WS keepalive ping params**
   At `_connect_websocket` (`nvidia_stt.py:249`), pass explicit `ping_interval`/`ping_timeout` to `websockets.connect()`, constructor-configurable (`ws_ping_interval: float = 20.0`, `ws_ping_timeout: float = 20.0`). Docstring: liveness during gated silence relies on WS ping/pong (server aiohttp `autoping=True`, no app idle timeout); we deliberately never send silence as keepalive.
   Key files: `server/nvidia_stt.py`
 
@@ -137,7 +137,7 @@ File under change: `/home/khkramer/src/yc-voice-agents-hackathon/server/nvidia_s
 |---|------|--------|--------|-------|
 | 1 | Probe: mode/semantics/end-vs-reset/keepalive (decision checkpoint) | done | 342d8b5 | CUMULATIVE=True→Part1 on; keepalive ok; end test inconclusive→proceed |
 | 2 | Part 1 — best-effort interim prefix-strip | done | 2483a38 | append-only committed tokens; None→fallback+log, ""→skip; wired strip_interim_prefix=True; lint+F401+import clean |
-| 3 | Part 2 — VAD-gated audio with pre-roll | done | — | gated socket sends; pre-roll flush; matched/unmatched VAD-stop; reconnect resets; cancel race fixed. Paired review (Codex b2lm409p7 + Opus): SOUND |
-| 4 | Explicit WS keepalive ping params | pending | — | |
+| 3 | Part 2 — VAD-gated audio with pre-roll | done | 50d827c | gated socket sends; pre-roll flush; matched/unmatched VAD-stop; reconnect resets; cancel race fixed. Paired review (Codex b2lm409p7 + Opus): SOUND |
+| 4 | Explicit WS keepalive ping params | done | — | ws_ping_interval/ws_ping_timeout ctor args (20/20 defaults) -> websockets.connect; behavior unchanged; reviewed by Opus+lint |
 | 5 | Offline tests + lint + import check | pending | — | |
 | 6 | Live multi-turn smoke test | pending | — | |

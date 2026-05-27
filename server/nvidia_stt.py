@@ -69,6 +69,8 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
         sample_rate: int = 16000,
         strip_interim_prefix: bool = True,
         preroll_seconds: float = 1.0,
+        ws_ping_interval: float = 20.0,
+        ws_ping_timeout: float = 20.0,
         **kwargs,
     ):
         """Initialize the NVIDIA STT service.
@@ -78,12 +80,16 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
             sample_rate: Audio sample rate (must be 16000 for Parakeet).
             strip_interim_prefix: Strip already-finalized tokens from cumulative interims.
             preroll_seconds: Audio buffered before VAD start so speech onsets are preserved.
+            ws_ping_interval: WebSocket ping interval in seconds.
+            ws_ping_timeout: WebSocket ping timeout in seconds.
             **kwargs: Additional arguments passed to the parent WebsocketSTTService.
         """
         super().__init__(sample_rate=sample_rate, **kwargs)
         self._url = url
         self._strip_interim_prefix = strip_interim_prefix
         self._preroll_seconds = preroll_seconds
+        self._ws_ping_interval = ws_ping_interval
+        self._ws_ping_timeout = ws_ping_timeout
         self._websocket = None
         self._receive_task: asyncio.Task | None = None
         self._ready = False
@@ -328,9 +334,20 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
         await self._call_event_handler("on_disconnected", self)
 
     async def _connect_websocket(self):
-        """Establish the websocket connection."""
+        """Establish the websocket connection.
+
+        Liveness during VAD-gated silence relies on WS ping/pong: the server
+        is aiohttp with autoping=True and has no app-level audio-idle timeout.
+        We deliberately never send silence as keepalive. The 20.0/20.0
+        defaults match websockets 15.0.1, so behavior is unchanged; the
+        explicit params are for belt-and-suspenders discoverability.
+        """
         try:
-            self._websocket = await websockets.connect(self._url)
+            self._websocket = await websockets.connect(
+                self._url,
+                ping_interval=self._ws_ping_interval,
+                ping_timeout=self._ws_ping_timeout,
+            )
             self._ready = False
 
             # Wait for ready message
