@@ -2,5 +2,8 @@ agent_name = "flower-bot"
 secret_set = "flower-bot-secrets"
 agent_profile = "agent-1x"
 
+[krisp_viva]
+	audio_filter = "tel"
+
 [scaling]
 	min_agents = 1

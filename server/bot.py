@@ -361,7 +361,7 @@ async def run_bot(
     llm = OpenAIResponsesLLMService(
         api_key=os.environ["OPENAI_API_KEY"],
         settings=OpenAIResponsesLLMService.Settings(
-            model="gpt-4.1",
+            model=os.getenv("OPENAI_MODEL", "gpt-4.1"),
             system_instruction=system_instruction,
         ),
     )
@@ -370,7 +370,7 @@ async def run_bot(
     tts = GradiumTTSService(
         api_key=os.environ["GRADIUM_API_KEY"],
         settings=GradiumTTSService.Settings(
-            voice=os.getenv("GRADIUM_VOICE_ID", "Eu9iL_CYe8N-Gkx_"),
+            voice=os.getenv("GRADIUM_VOICE_ID", "_6Aslh2DxfmnRLmP"),
         ),
     )
 
@@ -437,10 +437,15 @@ async def bot(runner_args: RunnerArguments):
     """Main bot entry point."""
 
     from_number: str | None = None
-    # Sample rate is transport-dependent: WebRTC defaults to 16 kHz in / 24 kHz out,
-    # Twilio media streams are fixed at 8 kHz μ-law in both directions.
-    audio_in_sample_rate = 16000
-    audio_out_sample_rate = 24000
+    transport_overrides: dict = {}
+
+    # Krisp is available when deployed to Pipecat Cloud
+    if os.environ.get("ENV") != "local":
+        from pipecat.audio.filters.krisp_viva_filter import KrispVivaFilter
+
+        krisp_filter = KrispVivaFilter()
+    else:
+        krisp_filter = None
 
     match runner_args:
         case SmallWebRTCRunnerArguments():
@@ -450,12 +455,16 @@ async def bot(runner_args: RunnerArguments):
                 webrtc_connection=webrtc_connection,
                 params=TransportParams(
                     audio_in_enabled=True,
+                    audio_in_filter=krisp_filter,
                     audio_out_enabled=True,
                 ),
             )
         case WebSocketRunnerArguments():
-            audio_in_sample_rate = 8000
-            audio_out_sample_rate = 8000
+            # Twilio media streams are 8 kHz μ-law in both directions.
+            # This overrides the default sample rates: 16 kHz in / 24 kHz out.
+            transport_overrides["audio_in_sample_rate"] = 8000
+            transport_overrides["audio_out_sample_rate"] = 8000
+
             # Parse Twilio websocket and fetch call information
             _, call_data = await parse_telephony_websocket(runner_args.websocket)
 
@@ -477,6 +486,7 @@ async def bot(runner_args: RunnerArguments):
                 websocket=runner_args.websocket,
                 params=FastAPIWebsocketParams(
                     audio_in_enabled=True,
+                    audio_in_filter=krisp_filter,
                     audio_out_enabled=True,
                     add_wav_header=False,
                     serializer=serializer,
@@ -486,12 +496,7 @@ async def bot(runner_args: RunnerArguments):
             logger.error(f"Unsupported runner arguments type: {type(runner_args)}")
             return
 
-    await run_bot(
-        transport,
-        from_number=from_number,
-        audio_in_sample_rate=audio_in_sample_rate,
-        audio_out_sample_rate=audio_out_sample_rate,
-    )
+    await run_bot(transport, from_number=from_number, **transport_overrides)
 
 
 if __name__ == "__main__":
