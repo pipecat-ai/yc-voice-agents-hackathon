@@ -8,7 +8,7 @@ Cascade pipeline running:
 - **STT:** [Soniox](https://soniox.com)
 - **LLM:** [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) (GPT-4.1) with direct function tools
 - **TTS:** [Gradium](https://gradium.ai)
-- **Transports:** SmallWebRTC (local dev) and Twilio (production telephony)
+- **Transports:** SmallWebRTC (local dev) and [Twilio](https://www.twilio.com/en-us) (production telephony)
 - **Deploy target:** [Pipecat Cloud](https://pipecat.daily.co)
 
 ## Try it locally first
@@ -68,15 +68,17 @@ Once the bot works locally, deploy to Pipecat Cloud and connect it to a Twilio p
 
 ### Configure Twilio
 
-1. [Buy a phone number](https://help.twilio.com/articles/223135247) with voice capability.
+1. [Add credits / upgrade your Twilio account](https://twil.io/yc-hack)
 
-2. Get your Pipecat Cloud organization name:
+2. [Buy a phone number](https://help.twilio.com/articles/223135247) with voice capability.
+
+3. Get your Pipecat Cloud organization name:
 
    ```bash
    pc cloud organizations list
    ```
 
-3. Create a [TwiML Bin](https://help.twilio.com/articles/360043489573) with this configuration:
+4. Create a [TwiML Bin](https://help.twilio.com/articles/360043489573) with this configuration:
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -92,7 +94,7 @@ Once the bot works locally, deploy to Pipecat Cloud and connect it to a Twilio p
 
    Replace `YOUR_ORG_NAME` with the org name from step 2.
 
-4. Attach the TwiML Bin to your Twilio number: **Phone Numbers → Manage → Active numbers → \<your number\> → Voice Configuration → A call comes in → TwiML Bin**, then select the bin you just created. Save.
+5. Attach the TwiML Bin to your Twilio number: **Phone Numbers → Manage → Active numbers → \<your number\> → Voice Configuration → A call comes in → TwiML Bin**, then select the bin you just created. Save.
 
 ### Review the deployment configuration
 
@@ -126,3 +128,6 @@ Dial the Twilio number you set up. 🌷
 - [Pipecat Cloud Deployment](https://docs.pipecat.ai/pipecat-cloud/introduction)
 - [Pipecat Examples](https://github.com/pipecat-ai/pipecat-examples)
 - [Pipecat Discord](https://discord.gg/pipecat)
+- [Twilio Developer Hub](https://www.twilio.com/en-us/developers)
+- [Twilio Documentation](https://www.twilio.com/docs)
+- [Twilio Dev phone](https://www.twilio.com/docs/labs/dev-phone)
