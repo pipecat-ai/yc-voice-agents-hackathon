@@ -174,6 +174,48 @@ Learn more about [cloud builds](https://docs.pipecat.ai/pipecat-cloud/guides/clo
 
 Dial the Twilio number you set up. 🌷
 
+# Test your agent with Cekura
+
+[Cekura](https://cekura.com) tests and observes voice agents. For this hackathon, use it to **test the Pipecat bot you build in this repo** — run real conversations against it, score the transcripts, and fix what's failing before you demo.
+
+## a. Sign up
+
+Create your account at **[dashboard.cekura.ai](https://dashboard.cekura.ai)**. If you're approved for this hackathon, just sign up and your credits will show up automatically. If you don't see them, find someone from the Cekura team, they're on-site.
+
+## b. Onboarding (or skip it)
+
+On first login you'll land on a short setup flow that helps you create your first agent and test. Feel free to click through it — **or hit _Skip_** and jump straight to the dashboard if you'd rather set things up yourself. Either way takes a minute.
+
+## c. Recommended: start by testing your agent (via Claude Code)
+
+The fastest path — and what we recommend for the hackathon — is to drive Cekura from **Claude Code** using our MCP server + skills. You stay in your terminal, and Cekura handles agent creation, scenario generation, and running the test.
+
+**1. Install the Cekura skills + MCP** (Claude Code marketplace plugin — bundles the skills, slash commands, and auto-configured MCP server):
+
+```bash
+/plugin marketplace add cekura-ai/cekura-skills
+/plugin install cekura@cekura-skills
+```
+
+Repo: [github.com/cekura-ai/cekura-skills](https://github.com/cekura-ai/cekura-skills) · Full setup + other agents (Cursor, Codex, etc.): **[docs.cekura.ai → Claude Code guide](https://docs.cekura.ai/mcp/claude-code-guide)** and **[Skills](https://docs.cekura.ai/mcp/skills)**.
+
+**2. Run an end-to-end test** of your agent with a single command:
+
+```
+/cekura-report
+```
+
+This spins up an evaluator, runs scenarios against your Pipecat agent, and gives you back a full report — transcripts, scores, and what failed — so you can iterate fast.
+
+> When connecting your agent, **select `Pipecat` as the provider.** Details: [docs.cekura.ai → Pipecat](https://docs.cekura.ai/documentation/integrations/pipecat/automated).
+
+## Cekura — learn more
+
+- [Claude Code guide](https://docs.cekura.ai/mcp/claude-code-guide) — MCP + skills setup
+- [Cekura skills](https://docs.cekura.ai/mcp/skills) — all slash commands
+- [Pipecat integration](https://docs.cekura.ai/documentation/integrations/pipecat/automated)
+- [Cekura docs](https://docs.cekura.ai) · [dashboard](https://dashboard.cekura.ai)
+
 ## Learn more
 
 - [Pipecat Documentation](https://docs.pipecat.ai/)
