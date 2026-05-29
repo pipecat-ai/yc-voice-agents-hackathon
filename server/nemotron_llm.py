@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2024–2026, Daily
+#
+# SPDX-License-Identifier: BSD 2-Clause License
+#
+
 """vLLM OpenAI-compatible LLM service that times TTFB to the first NON-THINKING token.
 
 Stock pipecat (``BaseOpenAILLMService._process_context``) stops the TTFB clock on

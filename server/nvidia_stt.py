@@ -1,7 +1,7 @@
 #
-# NVIDIA WebSocket STT Service for Pipecat
+# Copyright (c) 2024–2026, Daily
 #
-# Connects to NVIDIA Parakeet ASR server via WebSocket for streaming transcription.
+# SPDX-License-Identifier: BSD 2-Clause License
 #
 
 """NVIDIA Parakeet streaming speech-to-text service implementation."""
@@ -146,6 +146,11 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
         """Check if this service can generate processing metrics."""
         return True
 
+    @property
+    def supports_ttfs(self) -> bool:
+        """TTFS doesn't apply: the server defines turn boundaries directly."""
+        return False
+
     async def start(self, frame: StartFrame):
         """Start the NVIDIA STT service.
 
@@ -256,7 +261,7 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
 
         self._audio_ring += frame.audio
         if self._preroll_bytes > 0 and len(self._audio_ring) > self._preroll_bytes:
-            del self._audio_ring[:-self._preroll_bytes]
+            del self._audio_ring[: -self._preroll_bytes]
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         """Process frames, finalizing the utterance on VAD end-of-speech.
@@ -327,10 +332,7 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
         if self._websocket and self._ready:
             try:
                 async with self._audio_send_lock:
-                    await self._websocket.send(json.dumps({
-                        "type": "reset",
-                        "finalize": finalize
-                    }))
+                    await self._websocket.send(json.dumps({"type": "reset", "finalize": finalize}))
                     # Log inside lock to get accurate byte count
                     samples = self._audio_bytes_sent // 2
                     duration_ms = (samples * 1000) // 16000
@@ -347,9 +349,7 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
         await self._connect_websocket()
 
         # Start receive task
-        self._receive_task = asyncio.create_task(
-            self._receive_task_handler(self._report_error)
-        )
+        self._receive_task = asyncio.create_task(self._receive_task_handler(self._report_error))
 
         await self._call_event_handler("on_connected", self)
 
@@ -484,7 +484,9 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
             # and uses keep_all_outputs=True to get complete words.
 
             reset_type = "hard" if is_hard_reset else "soft"
-            logger.debug(f"{self} {reset_type} final at {time.time():.3f}: {text[-50:] if len(text) > 50 else text}")
+            logger.debug(
+                f"{self} {reset_type} final at {time.time():.3f}: {text[-50:] if len(text) > 50 else text}"
+            )
 
             if is_hard_reset:
                 # Server handles deduplication - it sends only the delta (new portion)

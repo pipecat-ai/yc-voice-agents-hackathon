@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2024–2026, Daily
+#
+# SPDX-License-Identifier: BSD 2-Clause License
+#
+
 """Mock backend data for the Field & Flower flower-shop demo.
 
 This is the file to edit when customizing the demo for your own hackathon
@@ -123,6 +129,7 @@ BOUQUETS = {
     },
 }
 
+# Add your own number here if you want to test the bot with a known customer
 KNOWN_CUSTOMERS = {
     "+14155551234": {"name": "Alex", "last_order": "rose romance"},
     "+14155555678": {"name": "Jordan", "last_order": "wildflower medley"},

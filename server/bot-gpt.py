@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2024–2025, Daily
+# Copyright (c) 2024–2026, Daily
 #
 # SPDX-License-Identifier: BSD 2-Clause License
 #
@@ -15,7 +15,7 @@ function tools registered on the LLM context.
 
 Run the bot using::
 
-    uv run bot.py
+    uv run bot-gpt.py
 """
 
 import os
@@ -43,10 +43,10 @@ from pipecat.runner.types import (
 )
 from pipecat.runner.utils import parse_telephony_websocket
 from pipecat.serializers.twilio import TwilioFrameSerializer
+from pipecat.services.gradium.stt import GradiumSTTService
 from pipecat.services.gradium.tts import GradiumTTSService
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.services.openai.responses.llm import OpenAIResponsesLLMService
-from pipecat.services.gradium.stt import GradiumSTTService
 from pipecat.transcriptions.language import Language
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.smallwebrtc.connection import SmallWebRTCConnection

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2024–2025, Daily
+# Copyright (c) 2024–2026, Daily
 #
 # SPDX-License-Identifier: BSD 2-Clause License
 #
@@ -10,12 +10,12 @@ A customer calls in and the bot helps them pick a bouquet and arrange delivery.
 All backend calls (catalog, customer lookup, order placement) are mocked so the
 starter runs with no external dependencies beyond the AI services.
 
-Pipeline: Soniox STT → OpenAI Responses LLM → Cartesia TTS, with direct
+Pipeline: Nemotron Speech Streaming STT → Nemotron-3-Super-120B LLM → Gradium TTS, with direct
 function tools registered on the LLM context.
 
 Run the bot using::
 
-    uv run bot.py
+    uv run bot-nemotron.py
 """
 
 import os
@@ -29,8 +29,7 @@ from pipecat.adapters.schemas.tools_schema import ToolsSchema
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.frames.frames import EndTaskFrame, FunctionCallResultProperties, LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
-from pipecat.pipeline.runner import PipelineRunner
-from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.pipeline.worker import PipelineParams, PipelineWorker
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
@@ -51,6 +50,7 @@ from pipecat.transports.smallwebrtc.connection import SmallWebRTCConnection
 from pipecat.transports.smallwebrtc.transport import SmallWebRTCTransport
 from pipecat.transports.websocket.fastapi import FastAPIWebsocketParams, FastAPIWebsocketTransport
 from pipecat.turns.user_turn_strategies import FilterIncompleteUserTurnStrategies
+from pipecat.workers.runner import WorkerRunner
 
 from mock_backend import BOUQUETS, KNOWN_CUSTOMERS
 from nemotron_llm import VLLMOpenAILLMService
@@ -353,7 +353,6 @@ async def run_bot(
     # overridden via NVIDIA_ASR_URL.
     stt = NVidiaWebSocketSTTService(
         url=os.getenv("NVIDIA_ASR_URL", "ws://192.168.7.228:8081"),
-        sample_rate=16000,
         strip_interim_prefix=True,
     )
 
@@ -424,7 +423,7 @@ async def run_bot(
         ]
     )
 
-    task = PipelineTask(
+    worker = PipelineWorker(
         pipeline,
         params=PipelineParams(
             enable_metrics=True,
@@ -444,26 +443,32 @@ async def run_bot(
                 "content": "A customer just called. Greet them, 'This is Field & Flower, your local flower shop. How can I help you today?'",
             }
         )
-        await task.queue_frames([LLMRunFrame()])
+        await worker.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
         logger.info("Client disconnected")
-        await task.cancel()
+        await worker.cancel()
 
-    runner = PipelineRunner(handle_sigint=False)
+    runner = WorkerRunner(handle_sigint=False)
 
-    await runner.run(task)
+    await runner.add_workers(worker)
+    await runner.run()
 
 
 async def bot(runner_args: RunnerArguments):
     """Main bot entry point."""
 
     from_number: str | None = None
-    # Sample rate is transport-dependent: WebRTC defaults to 16 kHz in / 24 kHz out,
-    # Twilio media streams are fixed at 8 kHz μ-law in both directions.
-    audio_in_sample_rate = 16000
-    audio_out_sample_rate = 24000
+    transport_overrides: dict = {}
+
+    # Krisp is available when deployed to Pipecat Cloud
+    if os.environ.get("ENV") != "local":
+        from pipecat.audio.filters.krisp_viva_filter import KrispVivaFilter
+
+        krisp_filter = KrispVivaFilter()
+    else:
+        krisp_filter = None
 
     match runner_args:
         case SmallWebRTCRunnerArguments():
@@ -473,18 +478,16 @@ async def bot(runner_args: RunnerArguments):
                 webrtc_connection=webrtc_connection,
                 params=TransportParams(
                     audio_in_enabled=True,
+                    audio_in_filter=krisp_filter,
                     audio_out_enabled=True,
                 ),
             )
         case WebSocketRunnerArguments():
-            # Twilio media streams are 8 kHz μ-law on the wire, but Nemotron STT
-            # requires 16 kHz. Set the pipeline input rate to 16 kHz — the
-            # TwilioFrameSerializer upsamples inbound 8 kHz μ-law -> 16 kHz PCM in
-            # deserialize() (ulaw_to_pcm via its _input_resampler), so the STT
-            # receives 16 kHz. Outbound is downsampled back to 8 kHz μ-law by the
-            # serializer regardless, so the output rate can stay at 8 kHz.
-            audio_in_sample_rate = 16000
-            audio_out_sample_rate = 8000
+            # Twilio media streams are 8 kHz μ-law in both directions.
+            # This overrides the default sample rates: 16 kHz in / 24 kHz out.
+            transport_overrides["audio_in_sample_rate"] = 8000
+            transport_overrides["audio_out_sample_rate"] = 8000
+
             # Parse Twilio websocket and fetch call information
             _, call_data = await parse_telephony_websocket(runner_args.websocket)
 
@@ -506,6 +509,7 @@ async def bot(runner_args: RunnerArguments):
                 websocket=runner_args.websocket,
                 params=FastAPIWebsocketParams(
                     audio_in_enabled=True,
+                    audio_in_filter=krisp_filter,
                     audio_out_enabled=True,
                     add_wav_header=False,
                     serializer=serializer,
@@ -515,12 +519,7 @@ async def bot(runner_args: RunnerArguments):
             logger.error(f"Unsupported runner arguments type: {type(runner_args)}")
             return
 
-    await run_bot(
-        transport,
-        from_number=from_number,
-        audio_in_sample_rate=audio_in_sample_rate,
-        audio_out_sample_rate=audio_out_sample_rate,
-    )
+    await run_bot(transport, from_number=from_number, **transport_overrides)
 
 
 if __name__ == "__main__":

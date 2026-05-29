@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2024–2026, Daily
+#
+# SPDX-License-Identifier: BSD 2-Clause License
+#
+
 """Unit test: VLLMOpenAILLMService defers TTFB to the first non-thinking token."""
 
 import asyncio
@@ -31,6 +37,7 @@ class _FakeStream:
         async def gen():
             for c in self._chunks:
                 yield c
+
         return gen()
 
     async def close(self):
@@ -41,19 +48,27 @@ def test_ttfb_armed_only_on_first_content_token():
     async def run():
         svc = VLLMOpenAILLMService(model="m", api_key="EMPTY", base_url="http://x/v1")
         # Stream: role-only, reasoning-only, empty, then the first real content token.
-        upstream = _FakeStream([
-            _chunk(role="assistant"),
-            _chunk(reasoning_content="let me think..."),
-            _chunk(content=None),
-            _chunk(content="Hello"),
-            _chunk(content=" there"),
-        ])
+        upstream = _FakeStream(
+            [
+                _chunk(role="assistant"),
+                _chunk(reasoning_content="let me think..."),
+                _chunk(content=None),
+                _chunk(content="Hello"),
+                _chunk(content=" there"),
+            ]
+        )
 
         stop_calls = []
-        with patch.object(OpenAILLMService, "get_chat_completions",
-                          new=AsyncMock(return_value=upstream)), \
-             patch.object(OpenAILLMService, "stop_ttfb_metrics",
-                          new=AsyncMock(side_effect=lambda **kw: stop_calls.append(True))):
+        with (
+            patch.object(
+                OpenAILLMService, "get_chat_completions", new=AsyncMock(return_value=upstream)
+            ),
+            patch.object(
+                OpenAILLMService,
+                "stop_ttfb_metrics",
+                new=AsyncMock(side_effect=lambda **kw: stop_calls.append(True)),
+            ),
+        ):
             wrapped = await svc.get_chat_completions(context=None)
 
             armed_history = []
@@ -77,15 +92,23 @@ def test_no_content_turn_never_stops_ttfb():
 
     async def run():
         svc = VLLMOpenAILLMService(model="m", api_key="EMPTY", base_url="http://x/v1")
-        upstream = _FakeStream([
-            _chunk(role="assistant"),
-            _chunk(reasoning_content="thinking, no answer emitted"),
-        ])
+        upstream = _FakeStream(
+            [
+                _chunk(role="assistant"),
+                _chunk(reasoning_content="thinking, no answer emitted"),
+            ]
+        )
         stop_calls = []
-        with patch.object(OpenAILLMService, "get_chat_completions",
-                          new=AsyncMock(return_value=upstream)), \
-             patch.object(OpenAILLMService, "stop_ttfb_metrics",
-                          new=AsyncMock(side_effect=lambda **kw: stop_calls.append(True))):
+        with (
+            patch.object(
+                OpenAILLMService, "get_chat_completions", new=AsyncMock(return_value=upstream)
+            ),
+            patch.object(
+                OpenAILLMService,
+                "stop_ttfb_metrics",
+                new=AsyncMock(side_effect=lambda **kw: stop_calls.append(True)),
+            ),
+        ):
             wrapped = await svc.get_chat_completions(context=None)
             async for _chunk_ in wrapped:
                 await svc.stop_ttfb_metrics()
@@ -99,8 +122,11 @@ def test_arm_resets_per_turn():
     async def run():
         svc = VLLMOpenAILLMService(model="m", api_key="EMPTY", base_url="http://x/v1")
         svc._ttft_armed = True  # leftover from a prior turn
-        with patch.object(OpenAILLMService, "get_chat_completions",
-                          new=AsyncMock(return_value=_FakeStream([_chunk(reasoning_content="x")]))):
+        with patch.object(
+            OpenAILLMService,
+            "get_chat_completions",
+            new=AsyncMock(return_value=_FakeStream([_chunk(reasoning_content="x")])),
+        ):
             wrapped = await svc.get_chat_completions(context=None)
             # get_chat_completions resets the flag before streaming.
             assert svc._ttft_armed is False
