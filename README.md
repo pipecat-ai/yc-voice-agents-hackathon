@@ -174,19 +174,19 @@ Learn more about [cloud builds](https://docs.pipecat.ai/pipecat-cloud/guides/clo
 
 Dial the Twilio number you set up. 🌷
 
-# Test your agent with Cekura
+## Test your agent with Cekura
 
 [Cekura](https://cekura.com) tests and observes voice agents. For this hackathon, use it to **test the Pipecat bot you build in this repo** — run real conversations against it, score the transcripts, and fix what's failing before you demo.
 
-## a. Sign up
+### Sign up
 
 Create your account at **[dashboard.cekura.ai](https://dashboard.cekura.ai)**. If you're approved for this hackathon, just sign up and your credits will show up automatically. If you don't see them, find someone from the Cekura team, they're on-site.
 
-## b. Onboarding (or skip it)
+### Onboarding (or skip it)
 
 On first login you'll land on a short setup flow that helps you create your first agent and test. Feel free to click through it — **or hit _Skip_** and jump straight to the dashboard if you'd rather set things up yourself. Either way takes a minute.
 
-## c. Recommended: start by testing your agent (via Claude Code)
+### Recommended: start by testing your agent (via Claude Code)
 
 The fastest path — and what we recommend for the hackathon — is to drive Cekura from **Claude Code** using our MCP server + skills. You stay in your terminal, and Cekura handles agent creation, scenario generation, and running the test.
 
@@ -209,19 +209,24 @@ This spins up anything from 10–20 evaluators (what Cekura calls test cases), r
 
 > When connecting your agent, **select `Pipecat` as the provider.** Details: [docs.cekura.ai → Pipecat](https://docs.cekura.ai/documentation/integrations/pipecat/automated).
 
-## Cekura — learn more
-
-- [Claude Code guide](https://docs.cekura.ai/mcp/claude-code-guide) — MCP + skills setup
-- [Cekura skills](https://docs.cekura.ai/mcp/skills) — all slash commands
-- [Pipecat integration](https://docs.cekura.ai/documentation/integrations/pipecat/automated)
-- [Cekura docs](https://docs.cekura.ai) · [dashboard](https://dashboard.cekura.ai)
-
 ## Learn more
+
+### Pipecat
 
 - [Pipecat Documentation](https://docs.pipecat.ai/)
 - [Pipecat Cloud Deployment](https://docs.pipecat.ai/pipecat-cloud/introduction)
 - [Pipecat Examples](https://github.com/pipecat-ai/pipecat-examples)
 - [Pipecat Discord](https://discord.gg/pipecat)
+
+### Twilio
+
 - [Twilio Developer Hub](https://www.twilio.com/en-us/developers)
 - [Twilio Documentation](https://www.twilio.com/docs)
 - [Twilio Dev phone](https://www.twilio.com/docs/labs/dev-phone)
+
+### Cekura
+
+- [Claude Code guide](https://docs.cekura.ai/mcp/claude-code-guide) — MCP + skills setup
+- [Cekura skills](https://docs.cekura.ai/mcp/skills) — all slash commands
+- [Pipecat integration](https://docs.cekura.ai/documentation/integrations/pipecat/automated)
+- [Cekura docs](https://docs.cekura.ai) · [dashboard](https://dashboard.cekura.ai)
