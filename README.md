@@ -1,25 +1,72 @@
-# Voice Agent Hackathon Starter
+# YC Voice Agents Hackathon
 
-A telephone-based voice agent built with [Pipecat](https://pipecat.ai). The demo bot **Field & Flower** is a neighborhood flower shop: callers order a bouquet for delivery while the bot looks up the catalog, captures delivery details, and places the order. All backend calls are mocked, so the starter runs with nothing but AI service keys.
+Welcome to the YC Voice Agents Hackathon, hosted by [Cekura](https://cekura.com) and [Daily](https://daily.co), in partnership with [NVIDIA](https://nvidia.com), [AWS](https://aws.amazon.com), and [Twilio](https://twilio.com).
 
-## Tech stack
+The goal of this event is to learn about building, scaling, evaluating, and continuously improving voice agents.
 
-Cascade pipeline running:
-- **STT:** [Soniox](https://soniox.com)
-- **LLM:** [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) (GPT-4.1) with direct function tools
+## Schedule, rules, and prizes
+
+This is a one-day event. Please arrive by 8:30. We'll kick things off at 9:00.
+
+### Schedule
+
+  - 8:00 AM – Doors open & registration
+  - 8:30 AM – Breakfast
+  - 9:00 AM – Welcome / Hackathon begins
+  - 12:00 PM – Lunch
+  - 6:00 PM – Submissions due
+  - 6:00 - 8:00 PM – Dinner, demos, and conversation
+  - 8:00 PM – Judges' presentations
+  - 9:00 PM – We all go home
+
+### General guidance
+
+First of all, please respect the YC space. We very much appreciate YC hosting these events. Stay in the designated areas, clean up after meals, and in general be a good guest.
+
+Build something new for this hackathon. Use the tools from Cekura to evaluate and improve the performance of what you build. Use Pipecat as the orchestration framework for your voice agent. We also encourage you to use the open source models from NVIDIA, but it's okay to use any models that work well for your project.
+
+There will be engineers from Cekura, Daily, NVIDIA, AWS, and Twilio available to help you with your project. Don't hesitate to find us.
+
+Judging will start at 6:00. In general, the judges want to showcase interesting projects rather than just pick winners. So don't worry too much about what the judges are looking for in a project. Build something that demonstrates creativity, is interesting on a technical level, or solves a real problem! But do keep in mind that the judges want to see great examples of using Cekura to improve voice agent performance, and using open source models from NVIDIA.
+
+
+# Tech stack and starting points.
+
+This repo contains two versions of a voice agent built with [Pipecat](https://pipecat.ai).
+
+The demo bot **Field & Flower** is a neighborhood flower shop: callers order a bouquet for delivery while the bot looks up the catalog, captures delivery details, and places the order. All backend calls are mocked, so the starter runs with nothing but AI service keys.
+
+## Version 1 — GPT-4.1
+
+You can start with this before the hackathon, if you want to. Or test GPT-4.1 and Nemotron side-by-side during the hackathon, using Cekura.
+
+This bot only requires a Gradium API key and an OpenAI API key. Sign up for free at [Gradium](https://gradium.ai). We'll provide a code for Gradium credits, during the event.
+
+- **STT:** [Gradium](https://gradium.ai)
+- **LLM:** [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) (GPT-4.1)
 - **TTS:** [Gradium](https://gradium.ai)
 - **Transports:** SmallWebRTC (local dev) and [Twilio](https://www.twilio.com/en-us) (production telephony)
 - **Deploy target:** [Pipecat Cloud](https://pipecat.daily.co)
 
-## Try it locally first
+## Version 2
 
-Get the bot running over WebRTC in your browser before you wire up the phone, for a faster iteration loop.
+NVIDIA models hosted on AWS, available during the hackathon. We'll share endpoints for the NVIDIA ASR (STT) and LLM models at the beginning of the day.
+
+- **STT:** [Nemotron Speech Streaming](https://huggingface.co/nvidia/nemotron-speech-streaming-en-0.6b)
+- **LLM:** [Nemotron 3 Super 120B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16)
+- **TTS:** [Gradium](https://gradium.ai)
+- **Transports:** SmallWebRTC (local dev) and Twilio (production telephony)
+- **Deploy target:** [Pipecat Cloud](https://pipecat.daily.co)
+
+## Develop locally
+
+Get the bot running over WebRTC in your browser before you push to the cloud or wire up the phone, for a faster iteration loop.
 
 ### Prerequisites
 
 - Python 3.11+
 - [`uv`](https://docs.astral.sh/uv/getting-started/installation/) package manager
-- API keys for [OpenAI](https://platform.openai.com), [Soniox](https://soniox.com), and [Gradium](https://gradium.ai)
+- API keys for [OpenAI](https://platform.openai.com) and [Gradium](https://gradium.ai)
 
 ### Setup
 
@@ -34,7 +81,7 @@ Get the bot running over WebRTC in your browser before you wire up the phone, fo
 
    ```bash
    cp .env.example .env
-   # Edit .env and fill in OPENAI_API_KEY, SONIOX_API_KEY, GRADIUM_API_KEY.
+   # Edit .env and fill in OPENAI_API_KEY, GRADIUM_API_KEY.
    # TWILIO_* keys are only needed when you wire up the phone (next section).
    ```
 
@@ -47,7 +94,9 @@ Get the bot running over WebRTC in your browser before you wire up the phone, fo
 4. **Run the bot:**
 
    ```bash
-   uv run bot.py
+   # run one or the other of these
+   uv run bot-gpt.py
+   uv run bot-nemotron.py
    ```
 
    Open [http://localhost:7860](http://localhost:7860) and click **Connect** to start talking. First launch takes ~20s while Pipecat downloads VAD and turn-detection models.

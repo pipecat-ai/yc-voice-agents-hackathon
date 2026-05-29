@@ -10,7 +10,7 @@ A customer calls in and the bot helps them pick a bouquet and arrange delivery.
 All backend calls (catalog, customer lookup, order placement) are mocked so the
 starter runs with no external dependencies beyond the AI services.
 
-Pipeline: Soniox STT → OpenAI Responses LLM → Cartesia TTS, with direct
+Pipeline: Gradium STT → OpenAI Responses LLM → Gradium TTS, with direct
 function tools registered on the LLM context.
 
 Run the bot using::
@@ -46,7 +46,7 @@ from pipecat.serializers.twilio import TwilioFrameSerializer
 from pipecat.services.gradium.tts import GradiumTTSService
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.services.openai.responses.llm import OpenAIResponsesLLMService
-from pipecat.services.soniox.stt import SonioxContextObject, SonioxSTTService
+from pipecat.services.gradium.stt import GradiumSTTService
 from pipecat.transcriptions.language import Language
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.smallwebrtc.connection import SmallWebRTCConnection
@@ -348,12 +348,10 @@ async def run_bot(
     )
 
     # Speech-to-Text service
-    stt = SonioxSTTService(
-        api_key=os.environ["SONIOX_API_KEY"],
-        settings=SonioxSTTService.Settings(
-            language_hints=[Language.EN],
-            language_hints_strict=True,
-            context=SonioxContextObject(terms=["bouquet"]),
+    stt = GradiumSTTService(
+        api_key=os.environ["GRADIUM_API_KEY"],
+        settings=GradiumSTTService.Settings(
+            language=Language.EN,
         ),
     )
 

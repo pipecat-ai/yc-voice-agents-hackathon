@@ -219,3 +219,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Node.js (client/)
+
+# Local reference checkout of pipecat source (read-only; runtime uses the
+# installed pipecat-ai package). It's a separate 182MB embedded git repo.
+pipecat-core-code/
