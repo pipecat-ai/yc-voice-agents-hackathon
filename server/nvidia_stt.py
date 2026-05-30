@@ -13,6 +13,7 @@ from collections.abc import AsyncGenerator
 
 import websockets
 from loguru import logger
+from pipecat.audio.utils import create_stream_resampler
 from pipecat.frames.frames import (
     AudioRawFrame,
     CancelFrame,
@@ -124,6 +125,11 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
         self._url = url
         self._strip_interim_prefix = strip_interim_prefix
         self._preroll_seconds = preroll_seconds
+        # Parakeet requires 16kHz mono PCM. Transport audio may arrive at a
+        # different rate (e.g. 48kHz from WebRTC), so resample on the way in.
+        # The SOXR stream resampler keeps history across chunks to avoid clicks
+        # at chunk boundaries, which matters for streaming ASR quality.
+        self._resampler = create_stream_resampler()
         self._ws_ping_interval = ws_ping_interval
         self._ws_ping_timeout = ws_ping_timeout
         self._websocket = None
@@ -255,11 +261,16 @@ class NVidiaWebSocketSTTService(WebsocketSTTService):
             )
             return
 
+        # Resample to the rate Parakeet requires (self.sample_rate) before the
+        # audio enters the preroll ring or is streamed; everything downstream
+        # assumes 16kHz mono PCM. resample() is a no-op when rates already match.
+        audio = await self._resampler.resample(frame.audio, frame.sample_rate, self.sample_rate)
+
         if self._user_speaking:
-            await self.process_generator(self.run_stt(frame.audio))
+            await self.process_generator(self.run_stt(audio))
             return
 
-        self._audio_ring += frame.audio
+        self._audio_ring += audio
         if self._preroll_bytes > 0 and len(self._audio_ring) > self._preroll_bytes:
             del self._audio_ring[: -self._preroll_bytes]
 

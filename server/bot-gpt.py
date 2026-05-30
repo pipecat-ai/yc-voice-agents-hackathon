@@ -69,8 +69,8 @@ async def get_call_info(call_sid: str) -> dict:
     Returns:
         Dictionary containing call information including from_number, to_number, status, etc.
     """
-    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+    auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 
     if not account_sid or not auth_token:
         logger.warning("Missing Twilio credentials, cannot fetch call info")
@@ -477,8 +477,8 @@ async def bot(runner_args: RunnerArguments):
             serializer = TwilioFrameSerializer(
                 stream_sid=call_data["stream_id"],
                 call_sid=call_data["call_id"],
-                account_sid=os.getenv("TWILIO_ACCOUNT_SID", ""),
-                auth_token=os.getenv("TWILIO_AUTH_TOKEN", ""),
+                account_sid=os.environ["TWILIO_ACCOUNT_SID"],
+                auth_token=os.environ["TWILIO_AUTH_TOKEN"],
             )
 
             transport = FastAPIWebsocketTransport(

@@ -50,7 +50,13 @@ This bot only requires a Gradium API key and an OpenAI API key. Sign up for free
 
 ## Version 2
 
-NVIDIA models hosted on AWS, available during the hackathon. We'll share endpoints for the NVIDIA ASR (STT) and LLM models at the beginning of the day.
+NVIDIA models hosted on AWS, available during the hackathon.
+
+```
+  export NVIDIA_ASR_URL=ws://44.241.251.184:8080
+  export NEMOTRON_LLM_URL=http://nemotron-fleet-alb-1322439314.us-west-2.elb.amazonaws.com/v1
+  export NEMOTRON_LLM_MODEL=nvidia/nemotron-3-super
+  ```
 
 - **STT:** [Nemotron Speech Streaming](https://huggingface.co/nvidia/nemotron-speech-streaming-en-0.6b)
 - **LLM:** [Nemotron 3 Super 120B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16)
