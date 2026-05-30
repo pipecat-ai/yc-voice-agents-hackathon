@@ -68,8 +68,8 @@ async def get_call_info(call_sid: str) -> dict:
     Returns:
         Dictionary containing call information including from_number, to_number, status, etc.
     """
-    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+    auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 
     if not account_sid or not auth_token:
         logger.warning("Missing Twilio credentials, cannot fetch call info")
@@ -352,7 +352,7 @@ async def run_bot(
     # 16-bit PCM, 16 kHz, mono — matching the WebRTC input path. The URL can be
     # overridden via NVIDIA_ASR_URL.
     stt = NVidiaWebSocketSTTService(
-        url=os.getenv("NVIDIA_ASR_URL", "ws://192.168.7.228:8081"),
+        url=os.environ["NVIDIA_ASR_URL"],
         strip_interim_prefix=True,
     )
 
@@ -380,7 +380,7 @@ async def run_bot(
     enable_thinking = os.getenv("NEMOTRON_ENABLE_THINKING", "false").lower() == "true"
     llm = VLLMOpenAILLMService(
         api_key=os.getenv("NEMOTRON_LLM_API_KEY", "EMPTY"),  # vLLM ignores unless --api-key set
-        base_url=os.getenv("NEMOTRON_LLM_URL", "http://192.168.7.228:8000/v1"),
+        base_url=os.environ["NEMOTRON_LLM_URL"],
         settings=VLLMOpenAILLMService.Settings(
             model=os.getenv("NEMOTRON_LLM_MODEL", "nvidia/nemotron-3-super"),
             system_instruction=system_instruction,
@@ -501,8 +501,8 @@ async def bot(runner_args: RunnerArguments):
             serializer = TwilioFrameSerializer(
                 stream_sid=call_data["stream_id"],
                 call_sid=call_data["call_id"],
-                account_sid=os.getenv("TWILIO_ACCOUNT_SID", ""),
-                auth_token=os.getenv("TWILIO_AUTH_TOKEN", ""),
+                account_sid=os.environ["TWILIO_ACCOUNT_SID"],
+                auth_token=os.environ["TWILIO_AUTH_TOKEN"],
             )
 
             transport = FastAPIWebsocketTransport(
